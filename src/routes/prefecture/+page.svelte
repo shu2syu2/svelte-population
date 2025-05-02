@@ -60,7 +60,6 @@
         {/each}
       </select>
     </label>
-
     <label>
       年範囲：
       <input type="number" min={data.minYear} max={data.maxYear} name="start" bind:value={startYear} />

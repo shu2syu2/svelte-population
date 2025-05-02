@@ -145,7 +145,7 @@
   {#if data.population.length > 0}
     <p>対象：{data.prefectures.find(p => p.id == data.prefId)?.name}（{data.start}年～{data.end}年）</p>
     <div class="chart-wrapper">
-      <canvas bind:this={chartCanvas} width="800" height="400"></canvas>
+      <canvas bind:this={chartCanvas} width="400" height="200"></canvas>
     </div>
   {:else}
     <p>グラフを表示するには、都道府県と年範囲を指定してください。</p>
