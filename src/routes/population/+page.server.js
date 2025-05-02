@@ -4,6 +4,12 @@ import { pool } from '$lib/db.js';
 export async function load({ url }) {
   const year = Number(url.searchParams.get('year')) || 2005; // デフォルトは2005年
 
+  // 年の範囲（min, max）
+  const yearRangeRes = await pool.query(`
+    SELECT MIN(year) AS min, MAX(year) AS max FROM population.population
+  `);
+
+
   const res = await pool.query(
     `
     SELECT
@@ -28,6 +34,8 @@ export async function load({ url }) {
 
   return {
     year,
-    populationData: res.rows
+    populationData: res.rows,
+    minYear: yearRangeRes.rows[0].min,
+    maxYear: yearRangeRes.rows[0].max,
   };
 }

@@ -7,8 +7,13 @@ export async function load({ url }) {
   const end = parseInt(url.searchParams.get('end'));
 
   const prefecturesRes = await pool.query(
-    'SELECT id, name FROM population.prefectures WHERE id != 0 ORDER BY id'
+    'SELECT id, name FROM population.prefectures ORDER BY id'
   );
+
+  // 年の範囲（min, max）
+  const yearRangeRes = await pool.query(`
+    SELECT MIN(year) AS min, MAX(year) AS max FROM population.population
+  `);
 
   const populationRes = (prefId && start && end)
     ? await pool.query(
@@ -22,6 +27,8 @@ export async function load({ url }) {
   return {
     prefectures: prefecturesRes.rows,
     population: populationRes.rows,
+    minYear: yearRangeRes.rows[0].min,
+    maxYear: yearRangeRes.rows[0].max,
     prefId,
     start,
     end

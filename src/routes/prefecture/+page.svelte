@@ -7,6 +7,9 @@
   let errorMessage = '';
   let sortKey = 'year';
   let sortAsc = true;
+  let selectedPrefName = '';
+  let showResult = false;
+
 
   $: filtered = [...data.populationByRange]
     .filter(row => selectedPrefId && startYear && endYear
@@ -31,10 +34,16 @@
     if (!selectedPrefId || !startYear || !endYear) {
       event.preventDefault();
       errorMessage = '都道府県と開始年・終了年をすべて入力してください。';
+      selectedPrefName = '';
+      showResult = false;
     } else {
       errorMessage = '';
+      const selectedPref = data.prefectures.find(p => p.id == selectedPrefId);
+      selectedPrefName = selectedPref ? selectedPref.name : '';
+      showResult = true;
     }
   }
+
 </script>
 
 <h2>年範囲で都道府県人口を検索</h2>
@@ -53,12 +62,11 @@
     </label>
 
     <label>
-      開始年：
+      年範囲：
       <input type="number" min={data.minYear} max={data.maxYear} name="start" bind:value={startYear} />
-    </label>
-    <label>
-      終了年：
+      年～
       <input type="number" min={data.minYear} max={data.maxYear} name="end" bind:value={endYear} />
+      年
     </label>
     <button type="submit">表示</button>
   </form>
@@ -67,9 +75,16 @@
   {/if}
 </div>
 
-{#if selectedPrefId && filtered.length > 0}
+
+{#if showResult && selectedPrefId && filtered.length > 0}
   <div class="range-table">
-    <h3>検索結果（{data.prefectures.find(p => p.id == selectedPrefId)?.name}）</h3>
+    <h3>
+      検索結果：
+      {#if selectedPrefName}
+        {selectedPrefName}（{startYear}年～{endYear}年）
+      {/if}
+    </h3>
+   
     <div class="table-half">
       <table>
         <thead>
@@ -120,15 +135,22 @@
     font-size: 0.9rem;
     table-layout: fixed;
   }
-  th, td {
+  th {
     border: 1px solid #444;
     padding: 6px 8px;
     text-align: right;
     word-wrap: break-word;
     cursor: pointer;
   }
+  td {
+    border: 1px solid #444;
+    padding: 6px 8px;
+    text-align: right;
+    word-wrap: break-word;
+    cursor: default;
+  }
   th:first-child, td:first-child {
-    text-align: center;
+  text-align: right;
   }
   thead {
     background-color: #f0f0f0;

@@ -6,6 +6,8 @@
 
   export let data;
   let year = data.year;
+  let startYear = data.minYear;
+  let endYear = data.maxYear;
 
   let pieCanvas;
   let lineCanvas;
@@ -16,6 +18,10 @@
   let sortKey = 'id';
   let sortOrder = 'asc';
 
+  let showData = false;
+  let displayedYear = null;
+
+  
   // 表示用データ（並び替えられる）
   $: sortedData = [...data.populationData].sort((a, b) => {
   let valA = a[sortKey];
@@ -50,11 +56,19 @@
   function goToYear() {
     const y = parseInt(year);
     if (!isNaN(y)) {
+      // ページをリロードして表示する
       window.location.href = `?year=${y}`;
     }
   }
 
+
   onMount(async () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('year')) {
+      showData = true;
+      displayedYear = params.get('year');
+    }
+  
     await tick();
 
     if (!pieCanvas || !lineCanvas || !data.populationData?.length) return;
@@ -103,7 +117,7 @@
             borderColor: '#333',
             backgroundColor: 'rgba(100,100,100,0.1)',
             fill: false,
-            tension: 0.3,
+            tension: 0.0,
             pointRadius: 2
           },
           {
@@ -112,7 +126,7 @@
             borderColor: '#4A90E2',
             backgroundColor: 'rgba(74,144,226,0.2)',
             fill: false,
-            tension: 0.3,
+            tension: 0.0,
             pointRadius: 2
           },
           {
@@ -121,7 +135,7 @@
             borderColor: '#E94E77',
             backgroundColor: 'rgba(233,78,119,0.2)',
             fill: false,
-            tension: 0.3,
+            tension: 0.0,
             pointRadius: 2
           }
         ]
@@ -159,20 +173,24 @@
   });
 </script>
 
-<h1>{year}年 人口一覧</h1>
+<h1>人口一覧</h1>
 
 <!-- 年入力 -->
 <section>
   <h2>年を選択</h2>
   <div>
     <label>
-      <input bind:value={year} type="number" min="2000" max="2025" />
+      <input bind:value={year} type="number" min={startYear} max={endYear} />
     </label>
     <button on:click={goToYear}>表示</button>
+    {#if displayedYear}
+      <span style="margin-left: 1em;">検索結果：{displayedYear}年人口一覧</span>
+    {/if}
   </div>
 </section>
 
 <!-- 円グラフ -->
+{#if showData && data.populationData?.length}
 <section>
   <h2>全国男女比</h2>
   <div class="charts">
@@ -184,23 +202,27 @@
     ></canvas>
   </div>
 </section>
+{/if}
 
 <!-- 折れ線グラフ -->
+{#if showData && data.populationData?.length}
 <section>
   <h2>都道府県別人口推移（男女別）</h2>
   <div class="line-chart-scroll">
     <canvas
       bind:this={lineCanvas}
-      width="2820"
+      width="1000"
       height="400"
-      style="width: 2820px; height: 400px;"
+      style="width: 100%; height: 400px; display: block;"
     ></canvas>
   </div>
 </section>
+{/if}
 
 <!-- 表 -->
+{#if showData && data.populationData?.length}
 <section class="table-wrapper">
-  <h2>都道府県別人口一覧</h2>
+  <h2>都道府県別人口一覧(千人)</h2>
   <div class="table-container">
     <table>
   <thead>
@@ -236,7 +258,7 @@
 </table>
   </div>
 </section>
-
+{/if}
 
 <style>
   h2 {
@@ -289,10 +311,10 @@
   }
 
   .line-chart-scroll {
-    overflow-x: auto;
-    max-width: 100%;
+    width: 80vw;              /* 画面の80%幅 */
     margin-top: 20px;
     border: 1px solid #ccc;
+    overflow-x: auto;
   }
 
   .line-chart-scroll canvas {
