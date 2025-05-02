@@ -1,8 +1,7 @@
-import { Pool } from 'pg';
+import { pool } from '$lib/db.js';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ url }) {
-  const pool = new Pool(); // .envのPGHOST/PGUSERなどを使用
 
   // 都道府県一覧（ID≠0）
   const prefecturesRes = await pool.query(`
@@ -35,6 +34,7 @@ export async function load({ url }) {
 
     populationByRange = populationRes.rows;
   }
+  console.log('PGPASSWORD:', typeof process.env.PGPASSWORD, process.env.PGPASSWORD);
 
   return {
     prefectures: prefecturesRes.rows,
