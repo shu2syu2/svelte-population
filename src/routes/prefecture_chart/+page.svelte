@@ -11,13 +11,16 @@
     let chartCanvas;
     let chart;
   
-    let selectedPrefId = data.prefId ?? -1;
+    let selectedPrefId = data.prefId !== null && data.prefId !== undefined ? String(data.prefId) : '';
+
     let startYear = data.minYear;
     let endYear = data.maxYear;
   
     let showTotal = true;
-    let showMale = false;
-    let showFemale = false;
+    let showMale = true;
+    let showFemale = true;
+    let errorMessage = '';
+
   
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -90,25 +93,63 @@
       });
     });
   
-    function submitForm() {
-      if (selectedPrefId < 0 && startYear && endYear) {
-        alert("都道府県と年の範囲を指定してください。"+startYear+"~"+endYear);
+    function submitForm(event) {
+      event.preventDefault();
+
+      errorMessage = ''; // 初期化
+
+      const prefIdNum = Number(selectedPrefId);
+      const startNum = Number(startYear);
+      const endNum = Number(endYear);
+
+      if (selectedPrefId === '' || selectedPrefId === null || isNaN(prefIdNum)) {
+        errorMessage = "都道府県を選択してください。";
+        clearChart();
         return;
       }
-      if (startYear > endYear) {
-        alert("開始年は終了年以下にしてください。");
+
+      if (
+        startYear === '' || endYear === '' ||
+        startYear === null || endYear === null ||
+        isNaN(startNum) || isNaN(endNum)
+      ) {
+        errorMessage = "年の範囲を指定してください。";
+        clearChart();
         return;
       }
+
+      if (startNum > endNum) {
+        errorMessage = "開始年は終了年以下にしてください。";
+        clearChart();
+        return;
+      }
+
+      if (!showTotal && !showMale && !showFemale) {
+        errorMessage = "表示対象を1つ以上選択してください。";
+        clearChart();
+        return;
+      }
+
+      // クエリ作成して遷移
       const query = new URLSearchParams({
-        prefId: selectedPrefId,
-        start: startYear,
-        end: endYear,
+        prefId: prefIdNum,
+        start: startNum,
+        end: endNum,
         showTotal: showTotal ? '1' : '',
         showMale: showMale ? '1' : '',
         showFemale: showFemale ? '1' : ''
       });
+
       window.location.href = `/prefecture_chart?${query.toString()}`;
     }
+    function clearChart() {
+      if (chart) {
+        chart.destroy();
+        chart = null;
+      }
+      data.population = []; // 前回の結果を消す
+    }
+
   </script>
   
   <h2>人口推移グラフ</h2>
@@ -121,8 +162,9 @@
       <select name="prefId" bind:value={selectedPrefId}>
         <option value="">選択してください</option>
         {#each data.prefectures as pref}
-          <option value={pref.id}>{pref.name}</option>
+          <option value={String(pref.id)}>{pref.name}</option>
         {/each}
+
       </select>
     </label>
     <label>
@@ -139,6 +181,9 @@
       <label><input type="checkbox" bind:checked={showFemale}> 女性</label>
     </fieldset>
     <label><button type="submit">表示</button></label>
+    {#if errorMessage}
+      <p class="error-message">{errorMessage}</p>
+    {/if}
   </form>
   </div>
   
@@ -147,8 +192,6 @@
     <div class="chart-wrapper">
       <canvas bind:this={chartCanvas} width="400" height="200"></canvas>
     </div>
-  {:else}
-    <p>グラフを表示するには、都道府県と年範囲を指定してください。</p>
   {/if}
 
 <style>
@@ -191,6 +234,11 @@
   .checkbox-group label {
     display: inline-block;
     margin-right: 1rem;
+  }
+  .error-message {
+    color: red;
+    font-weight: bold;
+    margin-top: 0.5rem;
   }
 </style>
  
