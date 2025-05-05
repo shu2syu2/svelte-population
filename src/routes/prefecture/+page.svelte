@@ -78,7 +78,7 @@
 {#if showResult && selectedPrefId && filtered.length > 0}
   <div class="range-table">
     <h3>
-      検索結果：
+      検索結果[千人]：
       {#if selectedPrefName}
         {selectedPrefName}（{startYear}年～{endYear}年）
       {/if}
