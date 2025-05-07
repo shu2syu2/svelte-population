@@ -75,5 +75,6 @@
 
 <iframe
   src={iframeSrc}
+  title="人口データ表示フレーム" 
   style="width: 80%; height: 700px; border: 1px solid #ccc;"
 ></iframe>
